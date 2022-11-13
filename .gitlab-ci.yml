@@ -1,0 +1,11 @@
+include:
+  - project: 'Bigouden/gitlab-ci-templates'
+    file: '.gitlab-ci-docker.yml'
+
+stages:
+  - Quality
+  - Security
+  - Build
+  - Inspect
+  - Release
+  - Clean
