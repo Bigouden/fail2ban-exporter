@@ -7,6 +7,7 @@ import logging
 import os
 import sys
 import time
+import os
 from prometheus_client.core import REGISTRY, Metric
 from prometheus_client import start_http_server, PROCESS_COLLECTOR, PLATFORM_COLLECTOR
 from fail2ban.client.csocket import CSocket
@@ -108,7 +109,7 @@ class Fail2BanCollector:
             self.fail2ban_socket = CSocket(FAIL2BAN_EXPORTER_SOCKET)
         except ConnectionRefusedError as exception:
             logging.critical("%s : %s", exception, FAIL2BAN_EXPORTER_SOCKET)
-            sys.exit(1)
+            os.exit(1)
         except FileNotFoundError as exception:
             logging.critical("%s : %s", exception, FAIL2BAN_EXPORTER_SOCKET)
             sys.exit(1)
@@ -116,6 +117,7 @@ class Fail2BanCollector:
             logging.critical("%s : %s", exception, FAIL2BAN_EXPORTER_SOCKET)
             sys.exit(1)
         metrics = self.get_metrics()
+        self.fail2ban_socket.close()
         for metric in metrics:
             prometheus_metric = Metric(metric['name'], metric['description'], metric['type'])
             prometheus_metric.add_sample(metric['name'],
@@ -133,8 +135,11 @@ def main():
     # Init Fail2BanCollector
     REGISTRY.register(Fail2BanCollector())
     # Loop Infinity
-    while True:
-        time.sleep(1)
+    try:
+        while True:
+            time.sleep(1)
+    except SystemExit:
+        sys.exit(1)
 
 if __name__ == '__main__':
     main()
