@@ -3,7 +3,7 @@
 ## Quick Start
 
 ```bash
-docker build -t fail2ban-exporter .
+DOCKER_BUILDKIT=1 docker build -t fail2ban-exporter .
 docker run -dit --name fail2ban-exporter --user root -v /run/fail2ban/fail2ban.sock:/run/fail2ban/fail2ban.sock fail2ban-exporter
 ```
 
