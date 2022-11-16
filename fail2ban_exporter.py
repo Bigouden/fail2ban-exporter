@@ -67,6 +67,9 @@ class Fail2BanCollector:
         '''Get Fail2Ban Jails'''
         try:
             fail2ban_socket = CSocket(FAIL2BAN_EXPORTER_SOCKET)
+        except ConnectionRefusedError as exception:
+            logging.critical("%s : %s", exception, FAIL2BAN_EXPORTER_SOCKET)
+            sys.exit(1)
         except FileNotFoundError as exception:
             logging.critical("%s : %s", exception, FAIL2BAN_EXPORTER_SOCKET)
             sys.exit(1)
@@ -79,6 +82,9 @@ class Fail2BanCollector:
         '''Get Fail2Ban Jail Statistics'''
         try:
             fail2ban_socket = CSocket(FAIL2BAN_EXPORTER_SOCKET)
+        except ConnectionRefusedError as exception:
+            logging.critical("%s : %s", exception, FAIL2BAN_EXPORTER_SOCKET)
+            sys.exit(1)
         except FileNotFoundError as exception:
             logging.critical("%s : %s", exception, FAIL2BAN_EXPORTER_SOCKET)
             sys.exit(1)
