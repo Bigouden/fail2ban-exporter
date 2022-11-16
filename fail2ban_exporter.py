@@ -81,17 +81,6 @@ class Fail2BanCollector:
 
     def get_metrics(self):
         '''Get Prometheus Metrics'''
-        try:
-            self.fail2ban_socket = CSocket(FAIL2BAN_EXPORTER_SOCKET)
-        except ConnectionRefusedError as exception:
-            logging.critical("%s : %s", exception, FAIL2BAN_EXPORTER_SOCKET)
-            sys.exit(1)
-        except FileNotFoundError as exception:
-            logging.critical("%s : %s", exception, FAIL2BAN_EXPORTER_SOCKET)
-            sys.exit(1)
-        except PermissionError as exception:
-            logging.critical("%s : %s", exception, FAIL2BAN_EXPORTER_SOCKET)
-            sys.exit(1)
         metrics = []
         jails = self.get_jails()
         if len(jails) == 0:
@@ -115,6 +104,17 @@ class Fail2BanCollector:
 
     def collect(self):
         '''Collect Prometheus Metrics'''
+        try:
+            self.fail2ban_socket = CSocket(FAIL2BAN_EXPORTER_SOCKET)
+        except ConnectionRefusedError as exception:
+            logging.critical("%s : %s", exception, FAIL2BAN_EXPORTER_SOCKET)
+            sys.exit(1)
+        except FileNotFoundError as exception:
+            logging.critical("%s : %s", exception, FAIL2BAN_EXPORTER_SOCKET)
+            sys.exit(1)
+        except PermissionError as exception:
+            logging.critical("%s : %s", exception, FAIL2BAN_EXPORTER_SOCKET)
+            sys.exit(1)
         metrics = self.get_metrics()
         for metric in metrics:
             prometheus_metric = Metric(metric['name'], metric['description'], metric['type'])
