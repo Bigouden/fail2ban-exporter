@@ -61,37 +61,15 @@ REGISTRY.unregister(REGISTRY._names_to_collectors['python_gc_objects_collected_t
 class Fail2BanCollector:
     '''Fail2Ban Collector Class'''
     def __init__(self):
-        pass
+        self.fail2ban_socket = None
 
     def get_jails(self):
         '''Get Fail2Ban Jails'''
-        try:
-            fail2ban_socket = CSocket(FAIL2BAN_EXPORTER_SOCKET)
-        except ConnectionRefusedError as exception:
-            logging.critical("%s : %s", exception, FAIL2BAN_EXPORTER_SOCKET)
-            sys.exit(1)
-        except FileNotFoundError as exception:
-            logging.critical("%s : %s", exception, FAIL2BAN_EXPORTER_SOCKET)
-            sys.exit(1)
-        except PermissionError as exception:
-            logging.critical("%s : %s", exception, FAIL2BAN_EXPORTER_SOCKET)
-            sys.exit(1)
-        return fail2ban_socket.send(["status"])[1][1][1].split(', ')
+        return self.fail2ban_socket.send(["status"])[1][1][1].split(', ')
 
     def get_jail_stats(self, jail):
         '''Get Fail2Ban Jail Statistics'''
-        try:
-            fail2ban_socket = CSocket(FAIL2BAN_EXPORTER_SOCKET)
-        except ConnectionRefusedError as exception:
-            logging.critical("%s : %s", exception, FAIL2BAN_EXPORTER_SOCKET)
-            sys.exit(1)
-        except FileNotFoundError as exception:
-            logging.critical("%s : %s", exception, FAIL2BAN_EXPORTER_SOCKET)
-            sys.exit(1)
-        except PermissionError as exception:
-            logging.critical("%s : %s", exception, FAIL2BAN_EXPORTER_SOCKET)
-            sys.exit(1)
-        stats = fail2ban_socket.send(["status", jail])
+        stats = self.fail2ban_socket.send(["status", jail])
         currently_failed = stats[1][0][1][0][1]
         total_failed = stats[1][0][1][1][1]
         currently_banned = stats[1][1][1][0][1]
@@ -103,6 +81,17 @@ class Fail2BanCollector:
 
     def get_metrics(self):
         '''Get Prometheus Metrics'''
+        try:
+            self.fail2ban_socket = CSocket(FAIL2BAN_EXPORTER_SOCKET)
+        except ConnectionRefusedError as exception:
+            logging.critical("%s : %s", exception, FAIL2BAN_EXPORTER_SOCKET)
+            sys.exit(1)
+        except FileNotFoundError as exception:
+            logging.critical("%s : %s", exception, FAIL2BAN_EXPORTER_SOCKET)
+            sys.exit(1)
+        except PermissionError as exception:
+            logging.critical("%s : %s", exception, FAIL2BAN_EXPORTER_SOCKET)
+            sys.exit(1)
         metrics = []
         jails = self.get_jails()
         if len(jails) == 0:
