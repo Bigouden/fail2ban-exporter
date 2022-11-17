@@ -137,7 +137,7 @@ def main():
     start_http_server(FAIL2BAN_EXPORTER_PORT)
     # Init Fail2BanCollector
     REGISTRY.register(Fail2BanCollector())
-    # Loop Infinity
+    # Infinite Loop
     while True:
         time.sleep(1)
 
