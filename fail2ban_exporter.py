@@ -23,13 +23,15 @@ FAIL2BAN_EXPORTER_TZ = os.environ.get('TZ', 'Europe/Paris')
 # Logging Configuration
 try:
     pytz.timezone(FAIL2BAN_EXPORTER_TZ)
-    logging.Formatter.converter = lambda *args: datetime.now(tz=timezone(FAIL2BAN_EXPORTER_TZ)).timetuple()
+    logging.Formatter.converter = lambda *args: \
+                                  datetime.now(tz=pytz.timezone(FAIL2BAN_EXPORTER_TZ)).timetuple()
     logging.basicConfig(stream=sys.stdout,
                         format='%(asctime)s - %(levelname)s - %(message)s',
                         datefmt='%d/%m/%Y %H:%M:%S',
                         level=FAIL2BAN_EXPORTER_LOGLEVEL)
 except pytz.exceptions.UnknownTimeZoneError:
-    logging.Formatter.converter = lambda *args: datetime.now(tz=timezone('Europe/Paris')).timetuple()
+    logging.Formatter.converter = lambda *args: \
+                                  datetime.now(tz=pytz.timezone('Europe/Paris')).timetuple()
     logging.basicConfig(stream=sys.stdout,
                         format='%(asctime)s - %(levelname)s - %(message)s',
                         datefmt='%d/%m/%Y %H:%M:%S',
