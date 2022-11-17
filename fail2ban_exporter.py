@@ -7,7 +7,8 @@ import logging
 import os
 import sys
 import time
-import os
+from datetime import datetime
+from pytz import timezone
 from prometheus_client.core import REGISTRY, Metric
 from prometheus_client import start_http_server, PROCESS_COLLECTOR, PLATFORM_COLLECTOR
 from fail2ban.client.csocket import CSocket
@@ -17,8 +18,10 @@ FAIL2BAN_EXPORTER_NAME = os.environ.get('FAIL2BAN_EXPORTER_NAME',
                                         'fail2ban-exporter')
 FAIL2BAN_EXPORTER_LOGLEVEL = os.environ.get('FAIL2BAN_EXPORTER_LOGLEVEL',
                                             'INFO').upper()
-
+FAIL2BAN_EXPORTER_TIMEZONE = os.environ.get('FAIL2BAN_EXPORTER_TIMEZONE',
+                                            'Europe/Paris')
 # Logging Configuration
+logging.Formatter.converter = lambda *args: datetime.now(tz=timezone(FAIL2BAN_EXPORTER_TIMEZONE)).timetuple()
 try:
     logging.basicConfig(stream=sys.stdout,
                         format='%(asctime)s - %(levelname)s - %(message)s',
@@ -30,14 +33,14 @@ except ValueError:
                         datefmt='%d/%m/%Y %H:%M:%S',
                         level='INFO')
     logging.error("FAIL2BAN_EXPORTER_LOGLEVEL invalid !")
-    sys.exit(1)
+    os._exit(1)
 
 # Check FAIL2BAN_EXPORTER_PORT
 try:
     FAIL2BAN_EXPORTER_PORT = int(os.environ.get('FAIL2BAN_EXPORTER_PORT', '8123'))
 except ValueError:
     logging.error("FAIL2BAN_EXPORTER_PORT must be int !")
-    sys.exit(1)
+    os._exit(1)
 
 METRICS = [
     {'name': 'currently_failed',
@@ -85,8 +88,9 @@ class Fail2BanCollector:
         metrics = []
         jails = self.get_jails()
         if len(jails) == 0:
+            self.healthcheck = False
             logging.info("No Fail2Ban Jails, Exiting ...")
-            sys.exit(1)
+            os._exit(1)
         logging.info("Jails : %s", jails)
         for jail in jails:
             labels = {'job': FAIL2BAN_EXPORTER_NAME, 'jail': jail}
@@ -107,23 +111,22 @@ class Fail2BanCollector:
         '''Collect Prometheus Metrics'''
         try:
             self.fail2ban_socket = CSocket(FAIL2BAN_EXPORTER_SOCKET)
+            metrics = self.get_metrics()
+            for metric in metrics:
+                prometheus_metric = Metric(metric['name'], metric['description'], metric['type'])
+                prometheus_metric.add_sample(metric['name'],
+                                             value=metric['value'],
+                                             labels=metric['labels'])
+                yield prometheus_metric
         except ConnectionRefusedError as exception:
             logging.critical("%s : %s", exception, FAIL2BAN_EXPORTER_SOCKET)
-            os.exit(1)
+            os._exit(1)
         except FileNotFoundError as exception:
             logging.critical("%s : %s", exception, FAIL2BAN_EXPORTER_SOCKET)
-            sys.exit(1)
+            os._exit(1)
         except PermissionError as exception:
             logging.critical("%s : %s", exception, FAIL2BAN_EXPORTER_SOCKET)
-            sys.exit(1)
-        metrics = self.get_metrics()
-        self.fail2ban_socket.close()
-        for metric in metrics:
-            prometheus_metric = Metric(metric['name'], metric['description'], metric['type'])
-            prometheus_metric.add_sample(metric['name'],
-                                         value=metric['value'],
-                                         labels=metric['labels'])
-            yield prometheus_metric
+            os._exit(1)
 
 def main():
     '''Main Function'''
@@ -135,11 +138,8 @@ def main():
     # Init Fail2BanCollector
     REGISTRY.register(Fail2BanCollector())
     # Loop Infinity
-    try:
-        while True:
-            time.sleep(1)
-    except SystemExit:
-        sys.exit(1)
+    while True:
+        time.sleep(1)
 
 if __name__ == '__main__':
     main()
