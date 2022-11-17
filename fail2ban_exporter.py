@@ -18,10 +18,10 @@ FAIL2BAN_EXPORTER_NAME = os.environ.get('FAIL2BAN_EXPORTER_NAME',
                                         'fail2ban-exporter')
 FAIL2BAN_EXPORTER_LOGLEVEL = os.environ.get('FAIL2BAN_EXPORTER_LOGLEVEL',
                                             'INFO').upper()
-FAIL2BAN_EXPORTER_TIMEZONE = os.environ.get('FAIL2BAN_EXPORTER_TIMEZONE',
-                                            'Europe/Paris')
+FAIL2BAN_EXPORTER_TZ = os.environ.get('TZ', 'Europe/Paris')
+
 # Logging Configuration
-logging.Formatter.converter = lambda *args: datetime.now(tz=timezone(FAIL2BAN_EXPORTER_TIMEZONE)).timetuple()
+logging.Formatter.converter = lambda *args: datetime.now(tz=timezone(FAIL2BAN_EXPORTER_TZ)).timetuple()
 try:
     logging.basicConfig(stream=sys.stdout,
                         format='%(asctime)s - %(levelname)s - %(message)s',
@@ -88,7 +88,6 @@ class Fail2BanCollector:
         metrics = []
         jails = self.get_jails()
         if len(jails) == 0:
-            self.healthcheck = False
             logging.info("No Fail2Ban Jails, Exiting ...")
             os._exit(1)
         logging.info("Jails : %s", jails)
