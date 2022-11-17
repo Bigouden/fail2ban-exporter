@@ -8,7 +8,7 @@ import os
 import sys
 import time
 from datetime import datetime
-from pytz import timezone
+import pytz
 from prometheus_client.core import REGISTRY, Metric
 from prometheus_client import start_http_server, PROCESS_COLLECTOR, PLATFORM_COLLECTOR
 from fail2ban.client.csocket import CSocket
@@ -21,12 +21,21 @@ FAIL2BAN_EXPORTER_LOGLEVEL = os.environ.get('FAIL2BAN_EXPORTER_LOGLEVEL',
 FAIL2BAN_EXPORTER_TZ = os.environ.get('TZ', 'Europe/Paris')
 
 # Logging Configuration
-logging.Formatter.converter = lambda *args: datetime.now(tz=timezone(FAIL2BAN_EXPORTER_TZ)).timetuple()
 try:
+    pytz.timezone(FAIL2BAN_EXPORTER_TZ)
+    logging.Formatter.converter = lambda *args: datetime.now(tz=timezone(FAIL2BAN_EXPORTER_TZ)).timetuple()
     logging.basicConfig(stream=sys.stdout,
                         format='%(asctime)s - %(levelname)s - %(message)s',
                         datefmt='%d/%m/%Y %H:%M:%S',
                         level=FAIL2BAN_EXPORTER_LOGLEVEL)
+except pytz.exceptions.UnknownTimeZoneError::
+    logging.Formatter.converter = lambda *args: datetime.now(tz=timezone('Europe/Paris')).timetuple()
+    logging.basicConfig(stream=sys.stdout,
+                        format='%(asctime)s - %(levelname)s - %(message)s',
+                        datefmt='%d/%m/%Y %H:%M:%S',
+                        level='INFO')
+    logging.error("TZ invalid !")
+    os._exit(1)
 except ValueError:
     logging.basicConfig(stream=sys.stdout,
                         format='%(asctime)s - %(levelname)s - %(message)s',
