@@ -36,7 +36,7 @@ except pytz.exceptions.UnknownTimeZoneError:
                         format='%(asctime)s - %(levelname)s - %(message)s',
                         datefmt='%d/%m/%Y %H:%M:%S',
                         level='INFO')
-    logging.error("TZ invalid !")
+    logging.error("TZ invalid ! : %s", FAIL2BAN_EXPORTER_TZ)
     os._exit(1)
 except ValueError:
     logging.basicConfig(stream=sys.stdout,
