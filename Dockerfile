@@ -9,8 +9,7 @@ ENV SCRIPT="fail2ban_exporter.py"
 ENV USERNAME="exporter"
 ENV UID="1000"
 ENV GID="1000"
-COPY apk_packages /
-COPY pip_packages /
+COPY apk_packages pip_packages /
 ENV VIRTUAL_ENV="/fail2ban-exporter"
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 RUN xargs -a /apk_packages apk add --no-cache --update \
