@@ -20,7 +20,7 @@ from prometheus_client.core import REGISTRY, CollectorRegistry, Metric
 from prometheus_client.exposition import _bake_output, _SilentHandler, parse_qs
 
 FAIL2BAN_EXPORTER_SOCKET = os.environ.get(
-    "FAI2BAN_EXPORTER_SOCKET", "/run/fail2ban/fail2ban.sock"
+    "FAIL2BAN_EXPORTER_SOCKET", "/run/fail2ban/fail2ban.sock"
 )
 FAIL2BAN_EXPORTER_NAME = os.environ.get("FAIL2BAN_EXPORTER_NAME", "fail2ban-exporter")
 FAIL2BAN_EXPORTER_LOGLEVEL = os.environ.get(
