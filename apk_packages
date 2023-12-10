@@ -1,3 +1,4 @@
+fail2ban
 python3
 shadow
-fail2ban
+socat
