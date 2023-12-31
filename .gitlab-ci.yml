@@ -17,7 +17,10 @@ include:
         FAIL2BAN_EXPORTER_SOCKET: "/tmp/fail2ban.sock"
   image: $CONTAINER_CLIENT_IMAGE
   before_script:
-    - apk add --no-cache --update curl
+    - apk add --no-cache --update curl bind-tools
+    # Bypass for curl & c-ares
+    - echo "$(host -t A exporter | awk '/has address/ { print $4 }') exporter" >> /etc/hosts
+
   variables:
     GIT_STRATEGY: none
   dependencies: []
@@ -35,6 +38,10 @@ include:
   image:
     name: $CONTAINER_OWASP_ZAP_IMAGE
     entrypoint: [""]
+  before_script:
+    # Bypass for curl & c-ares
+    - apk add --no-cache --update bind-tools
+    - echo "$(host -t A target | awk '/has address/ { print $4 }') target" >> /etc/hosts
   variables:
     GIT_STRATEGY: none
   dependencies: []
