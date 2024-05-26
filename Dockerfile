@@ -1,6 +1,6 @@
 # kics-scan disable=f2f903fb-b977-461e-98d7-b3e2185c6118,9513a694-aa0d-41d8-be61-3271e056f36b,d3499f6d-1651-41bb-a9a7-de925fea487b,ae9c56a6-3ed1-4ac0-9b54-31267f51151d,4b410d24-1cbe-4430-a632-62c9a931cf1c
 
-ARG ALPINE_VERSION="3.19"
+ARG ALPINE_VERSION="3.20"
 
 FROM alpine:${ALPINE_VERSION} AS builder
 COPY --link apk_packages pip_packages /tmp/
@@ -14,7 +14,7 @@ ENV FAIL2BAN_EXPORTER_PORT=8123
 ENV FAIL2BAN_EXPORTER_LOGLEVEL='INFO'
 ENV FAIL2BAN_EXPORTER_NAME='fail2ban-exporter'
 ENV FAIL2BAN_EXPORTER_SOCKET='/run/fail2ban/fail2ban.sock'
-ENV PYTHONPATH='/usr/lib/python3.11/site-packages'
+ENV PYTHONPATH='/usr/lib/python3.12/site-packages'
 ENV SCRIPT="fail2ban_exporter.py"
 ENV USERNAME="exporter"
 ENV UID="1000"
